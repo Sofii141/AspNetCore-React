@@ -1,3 +1,5 @@
+// Ruta del archivo: src/Context/useAuth.tsx (CORREGIDO)
+
 import { createContext, useEffect, useState } from "react";
 import { UserProfile } from "../Models/User";
 import { useNavigate } from "react-router-dom";
@@ -5,14 +7,15 @@ import { loginAPI, registerAPI } from "../Services/AuthService";
 import { toast } from "react-toastify";
 import React from "react";
 import axios from "axios";
+import { jwtDecode } from "jwt-decode";
 
-// --- CAMBIO 1: El token es un detalle de implementación, no es necesario exponerlo en el contexto ---
 type UserContextType = {
   user: UserProfile | null;
   registerUser: (email: string, username: string, password: string) => void;
   loginUser: (username: string, password: string) => void;
   logout: () => void;
   isLoggedIn: () => boolean;
+  isAdmin: () => boolean;
 };
 
 type Props = { children: React.ReactNode };
@@ -21,7 +24,6 @@ const UserContext = createContext<UserContextType>({} as UserContextType);
 
 export const UserProvider = ({ children }: Props) => {
   const navigate = useNavigate();
-  // --- CAMBIO 2: No necesitamos un estado para el token, se gestiona en localStorage y en los headers de Axios ---
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isReady, setIsReady] = useState(false);
 
@@ -30,7 +32,6 @@ export const UserProvider = ({ children }: Props) => {
     const token = localStorage.getItem("token");
     if (user && token) {
       setUser(JSON.parse(user));
-      // Esto configura Axios correctamente al recargar la página si ya había una sesión
       axios.defaults.headers.common["Authorization"] = "Bearer " + token;
     }
     setIsReady(true);
@@ -53,18 +54,17 @@ export const UserProvider = ({ children }: Props) => {
         localStorage.setItem("user", JSON.stringify(userObj));
         setUser(userObj);
         
-        // --- CAMBIO 3 (CRÍTICO): Actualizamos los headers de Axios INMEDIATAMENTE después del registro ---
         axios.defaults.headers.common["Authorization"] = "Bearer " + token;
         
         toast.success("Registration Successful!");
         navigate("/search");
       }
     } catch (error) {
-        // El servicio de API ya se encarga de mostrar el toast de error con handleError
+        // El servicio de API ya se encarga de mostrar el toast de error
     }
   };
 
-  const loginUser = async (username: string, password: string) => {
+ const loginUser = async (username: string, password: string) => {
     try {
       const res = await loginAPI(username, password);
       if (res && res.data) {
@@ -77,36 +77,91 @@ export const UserProvider = ({ children }: Props) => {
         localStorage.setItem("user", JSON.stringify(userObj));
         setUser(userObj);
 
-        // --- CAMBIO 4 (CRÍTICO): Actualizamos los headers de Axios INMEDIATAMENTE después del login ---
         axios.defaults.headers.common["Authorization"] = "Bearer " + token;
 
         toast.success("Login Success!");
-        navigate("/search");
+
+        // --- ¡AQUÍ ESTÁ LA NUEVA LÓGICA DE REDIRECCIÓN INTELIGENTE! ---
+
+        // 1. Decodificamos el token INMEDIATAMENTE después de recibirlo.
+        //    Esto nos da acceso a los roles sin tener que llamar a la función 'isAdmin'.
+        type DecodedToken = {
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string | string[];
+            "role"?: string | string[];
+        };
+        const decodedToken: DecodedToken = jwtDecode(token);
+        const roles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decodedToken["role"];
+        
+        // 2. Verificamos si el rol es 'Admin'.
+        let isAdminUser = false;
+        if (roles) {
+            isAdminUser = Array.isArray(roles) ? roles.includes("Admin") : roles === "Admin";
+        }
+        
+        // 3. Redirigimos basándonos en el resultado.
+        if (isAdminUser) {
+          console.log("Usuario es Admin, redirigiendo a /admin/dashboard");
+          navigate("/admin/dashboard"); // <-- Redirección para Admins
+        } else {
+          console.log("Usuario es normal, redirigiendo a /search");
+          navigate("/search"); // <-- Redirección para Usuarios Normales
+        }
       }
     } catch (error) {
-        // El servicio de API ya se encarga de mostrar el toast de error con handleError
+        // El servicio de API ya se encarga de mostrar el toast de error
     }
   };
-
+  
   const isLoggedIn = () => {
-    return !!user;
+    return !!localStorage.getItem("token");
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    
-    // --- CAMBIO 5 (CRÍTICO): Limpiamos los headers de Axios para que no envíe un token viejo ---
     delete axios.defaults.headers.common["Authorization"];
-
     navigate("/");
+  };
+
+// En src/Context/useAuth.tsx
+
+const isAdmin = () => {
+    const token = localStorage.getItem("token");
+    console.log("1. ¿Existe un token?", !!token); // Log 1
+
+    if (!token) return false;
+
+    try {
+      type DecodedToken = {
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string | string[];
+        "role"?: string | string[];
+      };
+
+      const decodedToken: DecodedToken = jwtDecode(token);
+      console.log("2. Token decodificado:", decodedToken); // Log 2
+
+      const roles = decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decodedToken["role"];
+      console.log("3. Roles encontrados en el token:", roles); // Log 3
+      
+      if (!roles) {
+        console.log("4. No se encontraron roles, devolviendo false."); // Log 4
+        return false;
+      }
+      
+      const result = Array.isArray(roles) ? roles.includes("Admin") : roles === "Admin";
+      console.log("5. ¿Es el rol 'Admin'?", result); // Log 5
+
+      return result;
+    } catch (error) {
+      console.error("Error al decodificar el token:", error);
+      return false;
+    }
   };
 
   return (
     <UserContext.Provider
-      // --- CAMBIO 6: Ya no pasamos el token en el 'value' ---
-      value={{ loginUser, user, logout, isLoggedIn, registerUser }}
+      value={{ loginUser, user, logout, isLoggedIn, registerUser, isAdmin }}
     >
       {isReady ? children : null}
     </UserContext.Provider>
