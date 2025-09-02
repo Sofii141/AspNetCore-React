@@ -16,7 +16,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-
 // --- SWAGGER CONFIGURATION ---
 builder.Services.AddSwaggerGen(option =>
 {
@@ -57,7 +56,6 @@ builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// Nota: Los options vacíos en AddIdentity están bien, Identity usará su configuración por defecto.
 builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
     options.SignIn.RequireConfirmedAccount = false;
     options.User.RequireUniqueEmail = true;
@@ -69,11 +67,7 @@ builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
 })
 .AddEntityFrameworkStores<ApplicationDBContext>();
 
-
-// ------------------- ¡LA CORRECCIÓN ESTÁ AQUÍ! -------------------
-// Esta sección reemplaza tu configuración de autenticación genérica.
-// Le dice explícitamente a ASP.NET Core que use JWT Bearer para la autenticación
-// y que devuelva un error 401 en lugar de redirigir.
+// --- AUTHENTICATION CONFIGURATION ---
 builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -91,16 +85,17 @@ builder.Services.AddAuthentication(options => {
         )
     };
 });
-// ------------------- FIN DE LA CORRECCIÓN -------------------
 
-
-// --- INYECCIÓN DE DEPENDENCIAS PARA DATOS QUEMADOS ---
+// --- INYECCIÓN DE DEPENDENCIAS (DEPENDENCY INJECTION) ---
+// Para Stocks y Portfolios, seguimos usando datos en memoria como planeamos.
 builder.Services.AddScoped<IStockRepository, InMemoryStockRepository>();
-builder.Services.AddScoped<ICommentRepository, InMemoryCommentRepository>();
 builder.Services.AddScoped<IPortfolioRepository, InMemoryPortfolioRepository>();
 
+// --- ¡AQUÍ ESTÁ EL CAMBIO IMPORTANTE! ---
+// Para los Comentarios, ahora usamos el repositorio que se conecta a la base de datos.
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
-// Servicios que no dependen de la base de datos
+// Servicios que no dependen directamente de una tabla (como el TokenService)
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 

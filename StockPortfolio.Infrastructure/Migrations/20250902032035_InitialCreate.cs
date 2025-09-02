@@ -63,7 +63,10 @@ namespace StockPortfolio.Infrastructure.Migrations
                     Purchase = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     LastDiv = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     Industry = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MarketCap = table.Column<long>(type: "bigint", nullable: false)
+                    MarketCap = table.Column<long>(type: "bigint", nullable: false),
+                    Sector = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Dcf = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -233,8 +236,18 @@ namespace StockPortfolio.Infrastructure.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "33a60369-9452-4677-b41c-b4a874cd533d", null, "Admin", "ADMIN" },
-                    { "b111b1ca-b0d1-4444-8a53-85e85b267820", null, "User", "USER" }
+                    { "748a6daa-781e-413b-a1bf-781542a0ef40", null, "User", "USER" },
+                    { "d17abceb-8c0b-454e-b296-883bc029d82b", null, "Admin", "ADMIN" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Stocks",
+                columns: new[] { "Id", "CompanyName", "Dcf", "Description", "Industry", "LastDiv", "MarketCap", "Purchase", "Sector", "Symbol" },
+                values: new object[,]
+                {
+                    { 1, "Tesla Inc.", 175.50m, "Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems in the United States, China, and internationally.", "Automotive", 0m, 580000000000L, 180.00m, "Automotive", "TSLA" },
+                    { 2, "Apple Inc.", 165.00m, "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.", "Technology", 0.92m, 2600000000000L, 170.50m, "Technology", "AAPL" },
+                    { 3, "Alphabet Inc.", 150.00m, "Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.", "Technology", 0m, 1700000000000L, 140.20m, "Technology", "GOOGL" }
                 });
 
             migrationBuilder.CreateIndex(

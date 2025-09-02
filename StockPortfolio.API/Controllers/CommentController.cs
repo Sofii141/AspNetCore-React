@@ -20,8 +20,6 @@ namespace StockPortfolio.API.Controllers
         private readonly IStockRepository _stockRepo;
         private readonly UserManager<AppUser> _userManager;
 
-        // --- CORRECCIÓN AQUÍ ---
-        // Se eliminó IFMPService del constructor y de las variables de la clase.
         public CommentController(ICommentRepository commentRepo,
                                  IStockRepository stockRepo,
                                  UserManager<AppUser> userManager)
@@ -39,6 +37,7 @@ namespace StockPortfolio.API.Controllers
                 return BadRequest(ModelState);
 
             var comments = await _commentRepo.GetAllAsync(queryObject);
+            // El mapper ya es seguro contra nulos, así que esta línea está bien.
             var commentDto = comments.Select(s => s.ToCommentDto());
             return Ok(commentDto);
         }
@@ -58,29 +57,35 @@ namespace StockPortfolio.API.Controllers
         }
 
         [HttpPost]
-        [Route("{symbol}")] // Eliminado ":alpha" para que sea más flexible
-        [Authorize] // Es buena práctica proteger endpoints de creación
-        public async Task<IActionResult> Create([FromRoute] string symbol, CreateCommentDto commentDto)
+        [Route("{symbol}")]
+        [Authorize]
+        public async Task<IActionResult> Create([FromRoute] string symbol, [FromBody] CreateCommentDto commentDto)
         {
+            // --- CORRECCIÓN 1: Se añadió [FromBody] para un enlace de datos explícito ---
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // --- CORRECCIÓN AQUÍ ---
-            // Se busca la acción solo en nuestro repositorio en memoria.
             var stock = await _stockRepo.GetBySymbolAsync(symbol);
 
-            // Si no se encuentra, se devuelve un error. Ya no se llama a una API externa.
             if (stock == null)
             {
                 return BadRequest("Stock does not exist");
             }
 
-            var username = User.GetUsername();
-            var appUser = await _userManager.FindByNameAsync(username);
+            // --- CORRECCIÓN 2: Forma más segura de obtener el usuario actual ---
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser == null)
+            {
+                return Unauthorized("User for token not found.");
+            }
 
             var commentModel = commentDto.ToCommentFromCreate(stock.Id);
             commentModel.AppUserId = appUser.Id;
             await _commentRepo.CreateAsync(commentModel);
+
+            // Para que CreatedAtAction funcione, necesitamos devolver el objeto completo mapeado.
+            // Pero como nuestro repo en memoria no carga el AppUser, devolvemos el objeto sin mapear.
+            // Para una API REST perfecta, el repo debería devolver el objeto con el AppUser cargado.
             return CreatedAtAction(nameof(GetById), new { id = commentModel.Id }, commentModel.ToCommentDto());
         }
 

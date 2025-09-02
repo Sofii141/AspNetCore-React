@@ -20,17 +20,14 @@ namespace StockPortfolio.Infrastructure.Repositories
         // --- ¡ESTE ES EL MÉTODO CORREGIDO! ---
         public async Task<List<Comment>> GetAllAsync(CommentQueryObject queryObject)
         {
-            // Empezamos con todos los comentarios que incluyen la información del usuario
+            // Empezamos con todos los comentarios y le decimos que INCLUYA la información del AppUser
             var comments = _context.Comments.Include(a => a.AppUser).AsQueryable();
 
-            // Si se proporciona un símbolo en la consulta, filtramos por él.
             if (!string.IsNullOrWhiteSpace(queryObject.Symbol))
             {
-                // Buscamos comentarios cuyo Stock asociado tenga el símbolo solicitado.
-                comments = comments.Where(s => s.Stock != null && s.Stock.Symbol == queryObject.Symbol);
+                comments = comments.Where(s => s.Stock.Symbol == queryObject.Symbol);
             }
 
-            // Aplicamos el ordenamiento
             if (queryObject.IsDecsending)
             {
                 comments = comments.OrderByDescending(c => c.CreatedOn);
@@ -41,6 +38,7 @@ namespace StockPortfolio.Infrastructure.Repositories
 
         public async Task<Comment?> GetByIdAsync(int id)
         {
+            // También incluimos al AppUser al obtener un solo comentario por su ID
             return await _context.Comments.Include(a => a.AppUser).FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -65,8 +63,9 @@ namespace StockPortfolio.Infrastructure.Repositories
 
         public async Task<Comment?> DeleteAsync(int id)
         {
-            var commentModel = await _context.Comments.FindAsync(id);
+            var commentModel = await _context.Comments.FirstOrDefaultAsync(x => x.Id == id);
             if (commentModel == null) return null;
+
             _context.Comments.Remove(commentModel);
             await _context.SaveChangesAsync();
             return commentModel;

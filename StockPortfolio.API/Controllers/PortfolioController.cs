@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using StockPortfolio.Application.Extensions;
 using StockPortfolio.Application.Interfaces;
 using StockPortfolio.Domain.Entities;
 
@@ -17,8 +16,6 @@ namespace StockPortfolio.API.Controllers
         private readonly IStockRepository _stockRepo;
         private readonly IPortfolioRepository _portfolioRepo;
 
-        // --- CORRECCIÓN AQUÍ ---
-        // Se eliminó IFMPService del constructor.
         public PortfolioController(UserManager<AppUser> userManager,
                                  IStockRepository stockRepo,
                                  IPortfolioRepository portfolioRepo)
@@ -32,8 +29,13 @@ namespace StockPortfolio.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetUserPortfolio()
         {
-            var username = User.GetUsername();
-            var appUser = await _userManager.FindByNameAsync(username);
+            // --- CORRECCIÓN 1: Forma segura de obtener el usuario ---
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser == null)
+            {
+                return Unauthorized("User not found.");
+            }
+
             var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
             return Ok(userPortfolio);
         }
@@ -42,17 +44,23 @@ namespace StockPortfolio.API.Controllers
         [Authorize]
         public async Task<IActionResult> AddPortfolio(string symbol)
         {
-            var username = User.GetUsername();
-            var appUser = await _userManager.FindByNameAsync(username);
+            // --- CORRECCIÓN 2: La misma forma segura para añadir ---
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser == null)
+            {
+                return Unauthorized("User not found.");
+            }
 
-            // --- CORRECCIÓN AQUÍ ---
-            // Se busca la acción solo en nuestro repositorio en memoria.
             var stock = await _stockRepo.GetBySymbolAsync(symbol);
 
-            // Si la acción no existe, se devuelve un error. Ya no hay llamada a API externa.
-            if (stock == null) return BadRequest("Stock not found");
+            if (stock == null)
+            {
+                return BadRequest("Stock not found");
+            }
 
             var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
+
+            // Esta comprobación ahora es 100% segura
             if (userPortfolio.Any(e => e.Symbol.ToLower() == symbol.ToLower()))
             {
                 return BadRequest("Cannot add same stock to portfolio");
@@ -66,34 +74,42 @@ namespace StockPortfolio.API.Controllers
 
             await _portfolioRepo.CreateAsync(portfolioModel);
 
-            // Este chequeo no es realmente necesario con el repo en memoria, pero no hace daño.
             if (portfolioModel == null)
             {
                 return StatusCode(500, "Could not create");
             }
 
-            return Created();
+            return Created(); // Created es correcto para un POST exitoso.
         }
 
         [HttpDelete]
         [Authorize]
         public async Task<IActionResult> DeletePortfolio(string symbol)
         {
-            var username = User.GetUsername();
-            var appUser = await _userManager.FindByNameAsync(username);
-            var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
-            var filteredStock = userPortfolio.Where(s => s.Symbol.ToLower() == symbol.ToLower()).ToList();
-
-            if (filteredStock.Count() == 1)
+            // --- CORRECCIÓN 3: Y también para eliminar ---
+            var appUser = await _userManager.GetUserAsync(User);
+            if (appUser == null)
             {
+                return Unauthorized("User not found.");
+            }
+
+            var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
+
+            // Buscamos si la acción está en el portafolio del usuario
+            var filteredStock = userPortfolio.FirstOrDefault(s => s.Symbol.ToLower() == symbol.ToLower());
+
+            if (filteredStock != null)
+            {
+                // Si la encontramos, procedemos a borrar
                 await _portfolioRepo.DeletePortfolio(appUser, symbol);
             }
             else
             {
+                // Si no, devolvemos un error claro
                 return BadRequest("Stock not in your portfolio");
             }
 
-            return Ok();
+            return Ok(); // Devolvemos Ok si la eliminación fue exitosa
         }
     }
 }

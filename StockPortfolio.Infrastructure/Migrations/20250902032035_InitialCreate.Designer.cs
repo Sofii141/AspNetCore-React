@@ -12,7 +12,7 @@ using StockPortfolio.Infrastructure.Data;
 namespace StockPortfolio.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20250901003609_InitialCreate")]
+    [Migration("20250902032035_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -54,13 +54,13 @@ namespace StockPortfolio.Infrastructure.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "33a60369-9452-4677-b41c-b4a874cd533d",
+                            Id = "d17abceb-8c0b-454e-b296-883bc029d82b",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "b111b1ca-b0d1-4444-8a53-85e85b267820",
+                            Id = "748a6daa-781e-413b-a1bf-781542a0ef40",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -299,6 +299,13 @@ namespace StockPortfolio.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("Dcf")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Industry")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -312,6 +319,10 @@ namespace StockPortfolio.Infrastructure.Migrations
                     b.Property<decimal>("Purchase")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<string>("Sector")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Symbol")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -319,6 +330,47 @@ namespace StockPortfolio.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Stocks");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CompanyName = "Tesla Inc.",
+                            Dcf = 175.50m,
+                            Description = "Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems in the United States, China, and internationally.",
+                            Industry = "Automotive",
+                            LastDiv = 0m,
+                            MarketCap = 580000000000L,
+                            Purchase = 180.00m,
+                            Sector = "Automotive",
+                            Symbol = "TSLA"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CompanyName = "Apple Inc.",
+                            Dcf = 165.00m,
+                            Description = "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.",
+                            Industry = "Technology",
+                            LastDiv = 0.92m,
+                            MarketCap = 2600000000000L,
+                            Purchase = 170.50m,
+                            Sector = "Technology",
+                            Symbol = "AAPL"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CompanyName = "Alphabet Inc.",
+                            Dcf = 150.00m,
+                            Description = "Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.",
+                            Industry = "Technology",
+                            LastDiv = 0m,
+                            MarketCap = 1700000000000L,
+                            Purchase = 140.20m,
+                            Sector = "Technology",
+                            Symbol = "GOOGL"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

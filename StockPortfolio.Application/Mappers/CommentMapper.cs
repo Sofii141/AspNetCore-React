@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using StockPortfolio.Application.Dtos.Comment;
 using StockPortfolio.Domain.Entities;
 
@@ -17,7 +13,10 @@ namespace StockPortfolio.Application.Mappers
                 Title = commentModel.Title,
                 Content = commentModel.Content,
                 CreatedOn = commentModel.CreatedOn,
-                CreatedBy = commentModel.AppUser.UserName,
+                // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+                // Si AppUser no fue cargado (es nulo), usamos "Unknown" como valor por defecto.
+                // Esto previene el NullReferenceException.
+                CreatedBy = commentModel.AppUser?.UserName ?? "Unknown",
                 StockId = commentModel.StockId
             };
         }
@@ -41,6 +40,5 @@ namespace StockPortfolio.Application.Mappers
                 StockId = stockId
             };
         }
-
     }
 }

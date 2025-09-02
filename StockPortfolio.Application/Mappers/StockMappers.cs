@@ -8,6 +8,7 @@ namespace StockPortfolio.Application.Mappers
 {
     public static class StockMappers
     {
+
         public static StockDto ToStockDto(this Stock stockModel)
         {
             return new StockDto
@@ -15,10 +16,13 @@ namespace StockPortfolio.Application.Mappers
                 Id = stockModel.Id,
                 Symbol = stockModel.Symbol,
                 CompanyName = stockModel.CompanyName,
-                Purchase = stockModel.Purchase,
+                Purchase = stockModel.Purchase, 
                 LastDiv = stockModel.LastDiv,
                 Industry = stockModel.Industry,
                 MarketCap = stockModel.MarketCap,
+                Sector = stockModel.Sector,
+                Description = stockModel.Description,
+                Dcf = stockModel.Dcf,
                 Comments = stockModel.Comments.Select(c => c.ToCommentDto()).ToList()
             };
         }

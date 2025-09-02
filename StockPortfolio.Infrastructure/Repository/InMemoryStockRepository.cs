@@ -10,11 +10,29 @@ namespace StockPortfolio.Infrastructure.Repositories
 {
     public class InMemoryStockRepository : IStockRepository
     {
-        private static readonly List<Stock> _stocks = new List<Stock>
-        {
-            new Stock { Id = 1, Symbol = "TSLA", CompanyName = "Tesla Inc.", Purchase = 180.00m, Industry = "Automotive", MarketCap = 580000000000 },
-            new Stock { Id = 2, Symbol = "AAPL", CompanyName = "Apple Inc.", Purchase = 170.50m, Industry = "Technology", MarketCap = 2600000000000 },
-            new Stock { Id = 3, Symbol = "GOOGL", CompanyName = "Alphabet Inc.", Purchase = 140.20m, Industry = "Technology", MarketCap = 1700000000000 }
+        public static readonly List<Stock> _stocks = new List<Stock>
+{
+            new Stock
+            {
+                Id = 1, Symbol = "TSLA", CompanyName = "Tesla Inc.",
+                Purchase = 180.00m, Industry = "Automotive", MarketCap = 580000000000,
+                Sector = "Automotive", Dcf = 175.50m,
+                Description = "Tesla, Inc. designs, develops, manufactures, leases, and sells electric vehicles, and energy generation and storage systems in the United States, China, and internationally."
+            },
+            new Stock
+            {
+                Id = 2, Symbol = "AAPL", CompanyName = "Apple Inc.",
+                Purchase = 170.50m, Industry = "Technology", MarketCap = 2600000000000,
+                Sector = "Technology", Dcf = 165.00m,
+                Description = "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide."
+            },
+            new Stock
+            {
+                Id = 3, Symbol = "GOOGL", CompanyName = "Alphabet Inc.",
+                Purchase = 140.20m, Industry = "Technology", MarketCap = 1700000000000,
+                Sector = "Technology", Dcf = 150.00m,
+                Description = "Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America."
+            }
         };
 
         public Task<List<Stock>> GetAllAsync(QueryObject query)

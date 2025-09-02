@@ -1,7 +1,7 @@
-using Microsoft.Extensions.Configuration; // Para IConfiguration
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using StockPortfolio.Application.Interfaces; // Para ITokenService
-using StockPortfolio.Domain.Entities;       // Para AppUser
+using StockPortfolio.Application.Interfaces;
+using StockPortfolio.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -18,7 +18,6 @@ namespace StockPortfolio.Infrastructure.Service
         public TokenService(IConfiguration config)
         {
             _config = config;
-            // La clave JWT ahora la leeremos de una manera segura
             var signingKey = _config["JWT:SigningKey"];
             if (string.IsNullOrEmpty(signingKey))
             {
@@ -29,12 +28,15 @@ namespace StockPortfolio.Infrastructure.Service
 
         public string CreateToken(AppUser user)
         {
-            // El resto de la lógica del método probablemente esté bien,
-            // siempre que los 'using' de arriba estén correctos.
+            // --- ¡ESTA ES LA PARTE CORREGIDA! ---
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.GivenName, user.UserName)
+                // Claim estándar para el nombre de usuario
+                new Claim(JwtRegisteredClaimNames.Name, user.UserName), 
+                // Claim estándar y CRUCIAL para el ID del usuario
+                new Claim(JwtRegisteredClaimNames.NameId, user.Id), 
+                // Claim estándar para el email
+                new Claim(JwtRegisteredClaimNames.Email, user.Email)
             };
 
             var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
