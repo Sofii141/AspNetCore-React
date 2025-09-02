@@ -37,16 +37,16 @@ namespace StockPortfolio.Infrastructure.Data
                 .WithMany(u => u.Portfolios)
                 .HasForeignKey(p => p.StockId);
 
+            // --- Seeding de Roles ---
+            // Es crucial que el ID del rol 'Admin' coincida con el que usa AdminUserSeed.cs
             List<IdentityRole> roles = new List<IdentityRole>
             {
-                new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
+                new IdentityRole { Id = "d17abceb-8c0b-454e-b296-883bc029d82b", Name = "Admin", NormalizedName = "ADMIN" },
                 new IdentityRole { Name = "User", NormalizedName = "USER" },
             };
             builder.Entity<IdentityRole>().HasData(roles);
 
-            // --- ¡AQUÍ ESTÁ LA SOLUCIÓN! ---
-            // Le decimos a Entity Framework que, al crear la base de datos,
-            // inserte estas filas en la tabla 'Stocks'.
+            // --- Seeding de Stocks ---
             builder.Entity<Stock>().HasData(
                 new Stock
                 {
@@ -88,6 +88,17 @@ namespace StockPortfolio.Infrastructure.Data
                     Description = "Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America."
                 }
             );
+
+            // --- ¡ESTA ES LA PARTE QUE FALTABA! ---
+            // Seeding del Usuario Administrador
+            // 1. Llamamos a nuestra clase de seeding para obtener los objetos.
+            var (adminUser, adminUserRole) = AdminUserSeed.CreateAdminUserWithRole();
+
+            // 2. Le decimos a EF Core que cree este usuario cuando se genere la base de datos.
+            builder.Entity<AppUser>().HasData(adminUser);
+
+            // 3. Le decimos a EF Core que cree la relación entre el usuario y el rol.
+            builder.Entity<IdentityUserRole<string>>().HasData(adminUserRole);
         }
     }
 }

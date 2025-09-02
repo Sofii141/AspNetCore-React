@@ -236,9 +236,14 @@ namespace StockPortfolio.Infrastructure.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "748a6daa-781e-413b-a1bf-781542a0ef40", null, "User", "USER" },
+                    { "48397b8b-35bd-4376-9e0b-c011cdee42ed", null, "User", "USER" },
                     { "d17abceb-8c0b-454e-b296-883bc029d82b", null, "Admin", "ADMIN" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUsers",
+                columns: new[] { "Id", "AccessFailedCount", "ConcurrencyStamp", "Email", "EmailConfirmed", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                values: new object[] { "a18be9c0-aa65-4af8-bd17-00bd9344e575", 0, "00000000-0000-0000-0000-000000000000", "admin@test.com", true, false, null, "ADMIN@TEST.COM", "ADMIN", "AQAAAAIAAYagAAAAEE0j0MCvzAvne7q5I7g8kT3cmL41CanxdphCA8Q3PJho0MAKsOwLVUKqPT1zqM0kQw==", null, false, "00000000-0000-0000-0000-000000000000", false, "admin" });
 
             migrationBuilder.InsertData(
                 table: "Stocks",
@@ -249,6 +254,11 @@ namespace StockPortfolio.Infrastructure.Migrations
                     { 2, "Apple Inc.", 165.00m, "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.", "Technology", 0.92m, 2600000000000L, 170.50m, "Technology", "AAPL" },
                     { 3, "Alphabet Inc.", 150.00m, "Alphabet Inc. provides online advertising services in the United States, Europe, the Middle East, Africa, the Asia-Pacific, Canada, and Latin America.", "Technology", 0m, 1700000000000L, 140.20m, "Technology", "GOOGL" }
                 });
+
+            migrationBuilder.InsertData(
+                table: "AspNetUserRoles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[] { "d17abceb-8c0b-454e-b296-883bc029d82b", "a18be9c0-aa65-4af8-bd17-00bd9344e575" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

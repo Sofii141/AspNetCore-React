@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿// Ruta: StockPortfolio.Infrastructure/Repositories/StockRepository.cs (CORREGIDO)
+
+using Microsoft.EntityFrameworkCore;
 using StockPortfolio.Application.Dtos.Stock;
 using StockPortfolio.Application.Helpers;
 using StockPortfolio.Application.Interfaces;
@@ -29,6 +31,7 @@ namespace StockPortfolio.Infrastructure.Repositories
         {
             var stockModel = await _context.Stocks.FirstOrDefaultAsync(x => x.Id == id);
             if (stockModel == null) return null;
+
             _context.Stocks.Remove(stockModel);
             await _context.SaveChangesAsync();
             return stockModel;
@@ -36,8 +39,15 @@ namespace StockPortfolio.Infrastructure.Repositories
 
         public async Task<List<Stock>> GetAllAsync(QueryObject query)
         {
+            // Lógica mejorada para filtrar (puedes expandir esto más adelante).
             var stocks = _context.Stocks.Include(c => c.Comments).AsQueryable();
-            // Aquí iría la lógica de filtrado y paginación
+
+            if (!string.IsNullOrWhiteSpace(query.CompanyName))
+                stocks = stocks.Where(s => s.CompanyName.Contains(query.CompanyName));
+
+            if (!string.IsNullOrWhiteSpace(query.Symbol))
+                stocks = stocks.Where(s => s.Symbol == query.Symbol);
+
             return await stocks.ToListAsync();
         }
 
@@ -56,6 +66,12 @@ namespace StockPortfolio.Infrastructure.Repositories
             existingStock.LastDiv = stockDto.LastDiv;
             existingStock.Industry = stockDto.Industry;
             existingStock.MarketCap = stockDto.MarketCap;
+
+            // --- ¡CORRECCIÓN CLAVE! ---
+            // Le decimos a Entity Framework que también actualice estos campos.
+            existingStock.Sector = stockDto.Sector;
+            existingStock.Description = stockDto.Description;
+            existingStock.Dcf = stockDto.Dcf;
 
             await _context.SaveChangesAsync();
             return existingStock;

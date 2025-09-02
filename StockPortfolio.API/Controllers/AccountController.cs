@@ -1,3 +1,5 @@
+// Ruta del archivo: StockPortfolio.API/Controllers/AccountController.cs
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,12 +43,16 @@ namespace StockPortfolio.API.Controllers
             if (!result.Succeeded)
                 return Unauthorized("Username not found and/or password incorrect");
 
+            // --- ¡AQUÍ ESTÁ EL CAMBIO! Obtenemos los roles del usuario que inicia sesión. ---
+            var roles = await _userManager.GetRolesAsync(user);
+
             return Ok(
                 new NewUserDto
                 {
                     UserName = user.UserName,
                     Email = user.Email,
-                    Token = _tokenService.CreateToken(user)
+                    // --- Pasamos los roles para que se incluyan en el token JWT ---
+                    Token = _tokenService.CreateToken(user, roles)
                 }
             );
         }
@@ -63,7 +69,6 @@ namespace StockPortfolio.API.Controllers
 
                 var appUser = new AppUser
                 {
-                    // Es buena práctica usar ToLower() para el nombre de usuario para evitar duplicados como "User" y "user"
                     UserName = registerDto.Username.ToLower(),
                     Email = registerDto.Email
                 };
@@ -72,19 +77,20 @@ namespace StockPortfolio.API.Controllers
 
                 if (createdUser.Succeeded)
                 {
-                    // --- ¡CAMBIO IMPORTANTE! ---
-                    // Se ha eliminado la línea: MockData.Users.Add(appUser);
-                    // Ya no la necesitamos porque los comentarios se guardan en la base de datos.
-
+                    // A los nuevos usuarios se les asigna el rol "User" por defecto.
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded)
                     {
+                        // --- ¡AQUÍ ESTÁ EL CAMBIO! Obtenemos los roles del nuevo usuario. ---
+                        var roles = await _userManager.GetRolesAsync(appUser);
+
                         return Ok(
                             new NewUserDto
                             {
                                 UserName = appUser.UserName,
                                 Email = appUser.Email,
-                                Token = _tokenService.CreateToken(appUser)
+                                // --- Pasamos el rol ("User") para que se incluya en su primer token ---
+                                Token = _tokenService.CreateToken(appUser, roles)
                             }
                         );
                     }
@@ -100,8 +106,6 @@ namespace StockPortfolio.API.Controllers
             }
             catch (Exception e)
             {
-                // Devolvemos un error genérico en producción por seguridad.
-                // Para depuración, e.ToString() está bien.
                 return StatusCode(500, e.Message);
             }
         }

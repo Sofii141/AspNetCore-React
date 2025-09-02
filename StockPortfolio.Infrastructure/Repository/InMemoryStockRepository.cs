@@ -1,3 +1,5 @@
+// Ruta: StockPortfolio.Infrastructure/Repositories/InMemoryStockRepository.cs (CORREGIDO)
+
 using StockPortfolio.Application.Dtos.Stock;
 using StockPortfolio.Application.Helpers;
 using StockPortfolio.Application.Interfaces;
@@ -11,7 +13,7 @@ namespace StockPortfolio.Infrastructure.Repositories
     public class InMemoryStockRepository : IStockRepository
     {
         public static readonly List<Stock> _stocks = new List<Stock>
-{
+        {
             new Stock
             {
                 Id = 1, Symbol = "TSLA", CompanyName = "Tesla Inc.",
@@ -37,7 +39,8 @@ namespace StockPortfolio.Infrastructure.Repositories
 
         public Task<List<Stock>> GetAllAsync(QueryObject query)
         {
-            return Task.FromResult(_stocks);
+            // Devuelve una copia para evitar modificaciones accidentales de la lista original.
+            return Task.FromResult(_stocks.ToList());
         }
 
         public Task<Stock?> GetByIdAsync(int id)
@@ -45,17 +48,15 @@ namespace StockPortfolio.Infrastructure.Repositories
             return Task.FromResult(_stocks.FirstOrDefault(s => s.Id == id));
         }
 
-        // --- ¡LÓGICA IMPLEMENTADA! ---
         public Task<Stock> CreateAsync(Stock stockModel)
         {
-            // Simulamos un ID autoincremental
-            var maxId = _stocks.Max(s => s.Id);
+            // Lógica mejorada para evitar error si la lista está vacía.
+            var maxId = _stocks.Any() ? _stocks.Max(s => s.Id) : 0;
             stockModel.Id = maxId + 1;
             _stocks.Add(stockModel);
             return Task.FromResult(stockModel);
         }
 
-        // --- ¡LÓGICA IMPLEMENTADA! ---
         public Task<Stock?> UpdateAsync(int id, UpdateStockRequestDto stockDto)
         {
             var existingStock = _stocks.FirstOrDefault(s => s.Id == id);
@@ -71,10 +72,15 @@ namespace StockPortfolio.Infrastructure.Repositories
             existingStock.Industry = stockDto.Industry;
             existingStock.MarketCap = stockDto.MarketCap;
 
+            // --- ¡CORRECCIÓN CLAVE! ---
+            // Le decimos que también actualice los nuevos campos en la lista en memoria.
+            existingStock.Sector = stockDto.Sector;
+            existingStock.Description = stockDto.Description;
+            existingStock.Dcf = stockDto.Dcf;
+
             return Task.FromResult<Stock?>(existingStock);
         }
 
-        // --- ¡LÓGICA IMPLEMENTADA! ---
         public Task<Stock?> DeleteAsync(int id)
         {
             var stockToDelete = _stocks.FirstOrDefault(s => s.Id == id);
@@ -82,12 +88,10 @@ namespace StockPortfolio.Infrastructure.Repositories
             {
                 return Task.FromResult<Stock?>(null);
             }
-
             _stocks.Remove(stockToDelete);
             return Task.FromResult<Stock?>(stockToDelete);
         }
 
-        // Métodos de ayuda
         public Task<Stock?> GetBySymbolAsync(string symbol)
         {
             return Task.FromResult(_stocks.FirstOrDefault(s => s.Symbol.ToLower() == symbol.ToLower()));

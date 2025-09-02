@@ -12,7 +12,7 @@ using StockPortfolio.Infrastructure.Data;
 namespace StockPortfolio.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20250902032035_InitialCreate")]
+    [Migration("20250902234420_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -60,7 +60,7 @@ namespace StockPortfolio.Infrastructure.Migrations
                         },
                         new
                         {
-                            Id = "748a6daa-781e-413b-a1bf-781542a0ef40",
+                            Id = "48397b8b-35bd-4376-9e0b-c011cdee42ed",
                             Name = "User",
                             NormalizedName = "USER"
                         });
@@ -151,6 +151,13 @@ namespace StockPortfolio.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
+                            RoleId = "d17abceb-8c0b-454e-b296-883bc029d82b"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -235,6 +242,24 @@ namespace StockPortfolio.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "a18be9c0-aa65-4af8-bd17-00bd9344e575",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "00000000-0000-0000-0000-000000000000",
+                            Email = "admin@test.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@TEST.COM",
+                            NormalizedUserName = "ADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEE0j0MCvzAvne7q5I7g8kT3cmL41CanxdphCA8Q3PJho0MAKsOwLVUKqPT1zqM0kQw==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "00000000-0000-0000-0000-000000000000",
+                            TwoFactorEnabled = false,
+                            UserName = "admin"
+                        });
                 });
 
             modelBuilder.Entity("StockPortfolio.Domain.Entities.Comment", b =>

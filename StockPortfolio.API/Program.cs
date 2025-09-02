@@ -90,7 +90,7 @@ builder.Services.AddAuthentication(options => {
 // Para Stocks y Portfolios, seguimos usando datos en memoria como planeamos.
 builder.Services.AddScoped<IStockRepository, InMemoryStockRepository>();
 builder.Services.AddScoped<IPortfolioRepository, InMemoryPortfolioRepository>();
-
+builder.Services.AddScoped<IStockRepository, StockRepository>();
 // --- ¡AQUÍ ESTÁ EL CAMBIO IMPORTANTE! ---
 // Para los Comentarios, ahora usamos el repositorio que se conecta a la base de datos.
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
