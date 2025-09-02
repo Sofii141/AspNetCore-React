@@ -17,12 +17,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 
-// --- REEMPLAZA TU CONFIGURACIÓN DE SWAGGER CON ESTO ---
+// --- SWAGGER CONFIGURATION ---
 builder.Services.AddSwaggerGen(option =>
 {
     option.SwaggerDoc("v1", new OpenApiInfo { Title = "StockPortfolio.API", Version = "1.0" });
-
-    // 1. Definir el esquema de seguridad (Bearer Token JWT)
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -32,8 +30,6 @@ builder.Services.AddSwaggerGen(option =>
         BearerFormat = "JWT",
         Scheme = "Bearer"
     });
-
-    // 2. Añadir el requisito de seguridad que usa el esquema anterior
     option.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -55,28 +51,58 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
 
-// DbContext e Identity se quedan, son necesarios para el login/register
+// --- DATABASE AND IDENTITY CONFIGURATION ---
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddIdentity<AppUser, IdentityRole>(options => { /*...*/ })
+// Nota: Los options vacíos en AddIdentity están bien, Identity usará su configuración por defecto.
+builder.Services.AddIdentity<AppUser, IdentityRole>(options => {
+    options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = true;
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+})
 .AddEntityFrameworkStores<ApplicationDBContext>();
 
-// Autenticación (sin cambios)
-builder.Services.AddAuthentication(options => { /*...*/ }).AddJwtBearer(options => { /*...*/ });
+
+// ------------------- ¡LA CORRECCIÓN ESTÁ AQUÍ! -------------------
+// Esta sección reemplaza tu configuración de autenticación genérica.
+// Le dice explícitamente a ASP.NET Core que use JWT Bearer para la autenticación
+// y que devuelva un error 401 en lugar de redirigir.
+builder.Services.AddAuthentication(options => {
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options => {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"])
+        )
+    };
+});
+// ------------------- FIN DE LA CORRECCIÓN -------------------
+
 
 // --- INYECCIÓN DE DEPENDENCIAS PARA DATOS QUEMADOS ---
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+builder.Services.AddScoped<IStockRepository, InMemoryStockRepository>();
+builder.Services.AddScoped<ICommentRepository, InMemoryCommentRepository>();
+builder.Services.AddScoped<IPortfolioRepository, InMemoryPortfolioRepository>();
 
 
 // Servicios que no dependen de la base de datos
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IFMPService, FMPService>(); // Ahora sí podemos activarlo
-builder.Services.AddHttpClient<IFMPService, FMPService>();
+
 
 var app = builder.Build();
 
@@ -93,7 +119,9 @@ app.UseCors(corsBuilder => corsBuilder
      .AllowAnyHeader()
      .AllowCredentials());
 
+// Es importante que UseAuthentication vaya ANTES de UseAuthorization
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
 app.Run();

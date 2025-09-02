@@ -1,12 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using StockPortfolio.Application.Extensions;
-using StockPortfolio.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using StockPortfolio.Application.Extensions;
+using StockPortfolio.Application.Interfaces;
 using StockPortfolio.Domain.Entities;
 
 namespace StockPortfolio.API.Controllers
@@ -18,15 +16,16 @@ namespace StockPortfolio.API.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly IStockRepository _stockRepo;
         private readonly IPortfolioRepository _portfolioRepo;
-        private readonly IFMPService _fmpService;
+
+        // --- CORRECCIÓN AQUÍ ---
+        // Se eliminó IFMPService del constructor.
         public PortfolioController(UserManager<AppUser> userManager,
-        IStockRepository stockRepo, IPortfolioRepository portfolioRepo,
-        IFMPService fmpService)
+                                 IStockRepository stockRepo,
+                                 IPortfolioRepository portfolioRepo)
         {
             _userManager = userManager;
             _stockRepo = stockRepo;
             _portfolioRepo = portfolioRepo;
-            _fmpService = fmpService;
         }
 
         [HttpGet]
@@ -45,26 +44,19 @@ namespace StockPortfolio.API.Controllers
         {
             var username = User.GetUsername();
             var appUser = await _userManager.FindByNameAsync(username);
+
+            // --- CORRECCIÓN AQUÍ ---
+            // Se busca la acción solo en nuestro repositorio en memoria.
             var stock = await _stockRepo.GetBySymbolAsync(symbol);
 
-            if (stock == null)
-            {
-                stock = await _fmpService.FindStockBySymbolAsync(symbol);
-                if (stock == null)
-                {
-                    return BadRequest("Stock does not exists");
-                }
-                else
-                {
-                    await _stockRepo.CreateAsync(stock);
-                }
-            }
-
+            // Si la acción no existe, se devuelve un error. Ya no hay llamada a API externa.
             if (stock == null) return BadRequest("Stock not found");
 
             var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
-
-            if (userPortfolio.Any(e => e.Symbol.ToLower() == symbol.ToLower())) return BadRequest("Cannot add same stock to portfolio");
+            if (userPortfolio.Any(e => e.Symbol.ToLower() == symbol.ToLower()))
+            {
+                return BadRequest("Cannot add same stock to portfolio");
+            }
 
             var portfolioModel = new Portfolio
             {
@@ -74,14 +66,13 @@ namespace StockPortfolio.API.Controllers
 
             await _portfolioRepo.CreateAsync(portfolioModel);
 
+            // Este chequeo no es realmente necesario con el repo en memoria, pero no hace daño.
             if (portfolioModel == null)
             {
                 return StatusCode(500, "Could not create");
             }
-            else
-            {
-                return Created();
-            }
+
+            return Created();
         }
 
         [HttpDelete]
@@ -90,9 +81,7 @@ namespace StockPortfolio.API.Controllers
         {
             var username = User.GetUsername();
             var appUser = await _userManager.FindByNameAsync(username);
-
             var userPortfolio = await _portfolioRepo.GetUserPortfolio(appUser);
-
             var filteredStock = userPortfolio.Where(s => s.Symbol.ToLower() == symbol.ToLower()).ToList();
 
             if (filteredStock.Count() == 1)
@@ -106,6 +95,5 @@ namespace StockPortfolio.API.Controllers
 
             return Ok();
         }
-
     }
 }
