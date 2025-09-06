@@ -93,7 +93,9 @@ builder.Services.AddScoped<IPortfolioRepository, InMemoryPortfolioRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 // --- ¡AQUÍ ESTÁ EL CAMBIO IMPORTANTE! ---
 // Para los Comentarios, ahora usamos el repositorio que se conecta a la base de datos.
-builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+//builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+//Utilizamos el repositorio en memoria para comentarios, ya que no se ha implementado la base de datos para comentarios.
+builder.Services.AddScoped<ICommentRepository, InMemoryCommentRepository>();
 
 // Servicios que no dependen directamente de una tabla (como el TokenService)
 builder.Services.AddScoped<ITokenService, TokenService>();
