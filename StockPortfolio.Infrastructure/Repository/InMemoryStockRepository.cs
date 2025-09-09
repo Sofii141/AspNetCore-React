@@ -50,7 +50,16 @@ namespace StockPortfolio.Infrastructure.Repositories
 
         public Task<Stock> CreateAsync(Stock stockModel)
         {
-            // L�gica mejorada para evitar error si la lista est� vac�a.
+              // VALIDACIÓN: Verificar si ya existe un stock con el mismo symbol
+            if (_stocks.Any(s => s.Symbol.ToLower() == stockModel.Symbol.ToLower()))
+            {
+                throw new System.Exception($"Ya existe un stock con el symbol '{stockModel.Symbol}'");
+            }           
+            // VALIDACIÓN: Verificar si ya existe un stock con el mismo nombre de compañía
+            if (_stocks.Any(s => s.CompanyName.ToLower() == stockModel.CompanyName.ToLower()))
+            {
+                throw new System.Exception($"Ya existe un stock con el nombre de compañía '{stockModel.CompanyName}'");
+            }           
             var maxId = _stocks.Any() ? _stocks.Max(s => s.Id) : 0;
             stockModel.Id = maxId + 1;
             _stocks.Add(stockModel);
@@ -65,15 +74,31 @@ namespace StockPortfolio.Infrastructure.Repositories
                 return Task.FromResult<Stock?>(null);
             }
 
+            // VALIDACIÓN: Verificar si otro stock diferente tiene el mismo symbol
+            var duplicateSymbol = _stocks
+                .FirstOrDefault(s => s.Symbol.ToLower() == stockDto.Symbol.ToLower() && s.Id != id);
+
+            if (duplicateSymbol != null)
+            {
+                throw new System.Exception($"Ya existe otro stock con el symbol '{stockDto.Symbol}' (ID: {duplicateSymbol.Id})");
+            }
+
+            // VALIDACIÓN: Verificar si otro stock diferente tiene el mismo nombre de compañía
+            var duplicateCompanyName = _stocks
+                .FirstOrDefault(s => s.CompanyName.ToLower() == stockDto.CompanyName.ToLower() && s.Id != id);
+
+            if (duplicateCompanyName != null)
+            {
+                throw new System.Exception($"Ya existe otro stock con el nombre de compañía '{stockDto.CompanyName}' (ID: {duplicateCompanyName.Id})");
+            }
+
+            // Actualizar propiedades
             existingStock.Symbol = stockDto.Symbol;
             existingStock.CompanyName = stockDto.CompanyName;
             existingStock.Purchase = stockDto.Purchase;
             existingStock.LastDiv = stockDto.LastDiv;
             existingStock.Industry = stockDto.Industry;
             existingStock.MarketCap = stockDto.MarketCap;
-
-            // --- �CORRECCI�N CLAVE! ---
-            // Le decimos que tambi�n actualice los nuevos campos en la lista en memoria.
             existingStock.Sector = stockDto.Sector;
             existingStock.Description = stockDto.Description;
             existingStock.Dcf = stockDto.Dcf;
@@ -101,5 +126,18 @@ namespace StockPortfolio.Infrastructure.Repositories
         {
             return Task.FromResult(_stocks.Any(s => s.Id == id));
         }
+        
+    public Task<bool> SymbolExists(string symbol, int? excludeId = null)
+    {
+    return Task.FromResult(_stocks
+        .Any(s => s.Symbol.ToLower() == symbol.ToLower() &&
+        (excludeId == null || s.Id != excludeId.Value)));
     }
+    public Task<bool> CompanyNameExists(string companyName, int? excludeId = null)
+        {
+            return Task.FromResult(_stocks
+                .Any(s => s.CompanyName.ToLower() == companyName.ToLower() &&
+                (excludeId == null || s.Id != excludeId.Value)));
+        }
+    }    
 }

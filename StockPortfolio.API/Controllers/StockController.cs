@@ -42,17 +42,28 @@ namespace StockPortfolio.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateStockRequestDto stockDto)
         {
-            var stockModel = stockDto.ToStockFromCreateDTO();
-            await _stockRepo.CreateAsync(stockModel);
-            return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDto());
+            try
+            {
+                var stockModel = stockDto.ToStockFromCreateDTO();
+                await _stockRepo.CreateAsync(stockModel);
+                return CreatedAtAction(nameof(GetById), new { id = stockModel.Id }, stockModel.ToStockDto());
+            } catch (System.Exception ex)   
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStockRequestDto updateDto)
         {
-            var stockModel = await _stockRepo.UpdateAsync(id, updateDto);
-            if (stockModel == null) return NotFound();
-            return Ok(stockModel.ToStockDto());
+            try{
+                var stockModel = await _stockRepo.UpdateAsync(id, updateDto);
+                if (stockModel == null) return NotFound();
+                return Ok(stockModel.ToStockDto());
+            } catch (System.Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]

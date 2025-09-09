@@ -86,12 +86,12 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-// --- INYECCIÓN DE DEPENDENCIAS (DEPENDENCY INJECTION) ---
+// --- INYECCIï¿½N DE DEPENDENCIAS (DEPENDENCY INJECTION) ---
 // Para Stocks y Portfolios, seguimos usando datos en memoria como planeamos.
 builder.Services.AddScoped<IStockRepository, InMemoryStockRepository>();
 builder.Services.AddScoped<IPortfolioRepository, InMemoryPortfolioRepository>();
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-// --- ¡AQUÍ ESTÁ EL CAMBIO IMPORTANTE! ---
+//builder.Services.AddScoped<IStockRepository, StockRepository>();
+// --- ï¿½AQUï¿½ ESTï¿½ EL CAMBIO IMPORTANTE! ---
 // Para los Comentarios, ahora usamos el repositorio que se conecta a la base de datos.
 //builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 //Utilizamos el repositorio en memoria para comentarios, ya que no se ha implementado la base de datos para comentarios.
@@ -111,10 +111,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(corsBuilder => corsBuilder
-     .WithOrigins("http://localhost:3000")
-     .AllowAnyMethod()
-     .AllowAnyHeader()
-     .AllowCredentials());
+    .WithOrigins("http://localhost:3000")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
 
 // Es importante que UseAuthentication vaya ANTES de UseAuthorization
 app.UseAuthentication();

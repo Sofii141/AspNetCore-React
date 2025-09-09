@@ -20,6 +20,11 @@ namespace StockPortfolio.Infrastructure.Repositories
             _context = context;
         }
 
+        public Task<bool> CompanyNameExists(string companyName, int? excludeId = null)
+{
+    throw new NotImplementedException();
+}
+
         public async Task<Stock> CreateAsync(Stock stockModel)
         {
             await _context.Stocks.AddAsync(stockModel);
