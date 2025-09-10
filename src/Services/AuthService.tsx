@@ -10,10 +10,22 @@ export const loginAPI = async (username: string, password: string) => {
       username: username,
       password: password,
     });
+
+     // Guardar token y username
+    if (data.data.token) {
+      localStorage.setItem("token", data.data.token);
+      localStorage.setItem("username", username); 
+    }
+
     return data;
   } catch (error) {
     handleError(error);
   }
+};
+
+// O si guardas el username directamente:
+export const getCurrentUsername = (): string | null => {
+  return localStorage.getItem("username");
 };
 
 export const registerAPI = async (

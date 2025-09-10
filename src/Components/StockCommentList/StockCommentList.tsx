@@ -4,17 +4,19 @@ import StockCommentListItem from "../StockCommentListItem/StockCommentListItem";
 
 type Props = {
   comments: CommentGet[];
+  refreshComments: () => void; // ← Agregar esta prop
 };
 
-const StockCommentList = ({ comments }: Props) => {
+const StockCommentList = ({ comments, refreshComments }: Props) => {
   return (
     <>
       {comments
         ? comments.map((comment) => (
-            // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-            // Le pasamos el 'id' del comentario a la prop 'key'.
-            // Esto soluciona la advertencia de React y mejora el rendimiento.
-            <StockCommentListItem key={comment.id} comment={comment} />
+            <StockCommentListItem 
+              key={comment.id} 
+              comment={comment} 
+              refreshComments={refreshComments} // ← Pasar la función
+            />
           ))
         : ""}
     </>

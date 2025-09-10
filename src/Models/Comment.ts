@@ -11,3 +11,8 @@ export type CommentGet = {
   content: string;
   createdBy: string;
 };
+
+export interface CommentPut {
+    title: string;
+    content: string;
+}
