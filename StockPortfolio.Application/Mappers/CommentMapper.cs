@@ -17,7 +17,8 @@ namespace StockPortfolio.Application.Mappers
                 // Si AppUser no fue cargado (es nulo), usamos "Unknown" como valor por defecto.
                 // Esto previene el NullReferenceException.
                 CreatedBy = commentModel.AppUser?.UserName ?? "Unknown",
-                StockId = commentModel.StockId
+                StockId = commentModel.StockId,
+                AppUserId = commentModel.AppUserId
             };
         }
 
