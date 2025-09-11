@@ -10,6 +10,7 @@ export type CommentGet = {
   title: string;
   content: string;
   createdBy: string;
+  appUserId: string;
 };
 
 export interface CommentPut {

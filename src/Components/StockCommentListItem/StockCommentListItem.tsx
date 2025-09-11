@@ -2,7 +2,7 @@ import React, { useState,useEffect } from "react";
 import { CommentGet } from "../../Models/Comment";
 import { commentUpdateAPI, commentDeleteAPI } from "../../Services/CommentService";
 import { toast } from "react-toastify";
-import { getCurrentUsername } from "../../Services/AuthService";
+import { getCurrentUsername, getCurrentUserId } from "../../Services/AuthService";
 
 type Props = {
   comment: CommentGet;
@@ -17,16 +17,21 @@ const StockCommentListItem = ({ comment, refreshComments }: Props) => {
   const [isCommentOwner, setIsCommentOwner] = useState(false);
 
   useEffect(() => {
-    // Obtener username del usuario actual al cargar el componente
-    const username = getCurrentUsername();
-    setCurrentUsername(username);
-    
-    // Verificar si el usuario actual es el dueño del comentario
-    if (username && comment.createdBy === username) {
-      setIsCommentOwner(true);
-    }
-  }, [comment.createdBy]);
-
+  const username = getCurrentUsername();
+  console.log("Current username:", username);
+  console.log("Comment createdBy:", comment.createdBy);
+  
+  setCurrentUsername(username);
+  
+  const currentUserId = getCurrentUserId(); // Función que obtiene el ID del usuario logueado
+  
+  // ✅ VALIDACIÓN SEGURA: Comparar por ID en lugar de username
+  if (currentUserId && comment.appUserId === currentUserId) {
+    setIsCommentOwner(true);
+  } else {
+    setIsCommentOwner(false);
+  }
+}, [comment.appUserId]);
 
   const handleUpdate = async () => {
     try {
@@ -54,9 +59,9 @@ const StockCommentListItem = ({ comment, refreshComments }: Props) => {
   };
 
   return (
-    <div className="relative grid grid-cols-1 gap-4 ml-4 p-4 mb-8 w-full border rounded-lg bg-white shadow-lg">
+ <div className="relative grid grid-cols-1 gap-4 ml-4 p-4 mb-8 w-full border rounded-lg bg-white shadow-lg">
       {isEditing ? (
-        // MODO EDICIÓN
+        // MODO EDICIÓN (solo para dueños)
         <div className="edit-mode">
           <input
             value={editTitle}
@@ -95,23 +100,31 @@ const StockCommentListItem = ({ comment, refreshComments }: Props) => {
                 <p className="relative text-xl whitespace-nowrap truncate overflow-hidden font-semibold">
                   {comment.title}
                 </p>
-                {/* BOTONES DE EDITAR Y ELIMINAR */}
-                <div className="flex space-x-2">
-                  <button 
-                    onClick={() => setIsEditing(true)} 
-                    className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    onClick={handleDelete} 
-                    className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </div>
+                
+                {/* BOTONES SOLO PARA EL DUEÑO DEL COMENTARIO */}
+                {isCommentOwner && (
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => setIsEditing(true)} 
+                      className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={handleDelete} 
+                      className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
               <p className="text-dark text-sm">@{comment.createdBy}</p>
+              
+              {/* INDICADOR DE PROPIEDAD */}
+              {isCommentOwner && (
+                <span className="text-xs text-green-600">(Your comment)</span>
+              )}
             </div>
           </div>
           <p className="-mt-4 text-gray-500">{comment.content}</p>
