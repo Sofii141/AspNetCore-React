@@ -15,9 +15,9 @@ const Navbar = (props: Props) => {
     <nav className="relative container mx-auto p-6">
       <div className="flex items-center justify-between">
         {/* --- Logo y enlaces principales --- */}
-        <div className="flex items-center space-x-20">
+        <div className="flex items-center space-x20">
           <Link to="/">
-            <img src={logo} alt="" />
+            <img src={logo} alt="" className="h-20" />
           </Link>
           <div className="hidden font-bold lg:flex space-x-6">
             
