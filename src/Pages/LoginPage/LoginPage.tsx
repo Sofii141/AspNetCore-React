@@ -5,6 +5,8 @@ import { useAuth } from "../../Context/useAuth";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
+
+import fondo from "../../assets/fondo.png"; 
 type Props = {};
 
 type LoginFormsInputs = {
@@ -59,7 +61,7 @@ const LoginPage = (props: Props) => {
                   htmlFor="username"
                   className="block text-sm font-medium text-[#24114B] mb-2"
                 >
-                  Username
+                  Usuario
                 </label>
                 <input
                   type="text"
@@ -78,7 +80,7 @@ const LoginPage = (props: Props) => {
                   htmlFor="password"
                   className="block text-sm font-medium text-[#24114B] mb-2"
                 >
-                  Password
+                  Contraseña
                 </label>
                 <input
                   type="password"

@@ -46,16 +46,16 @@ const RegisterPage = (props: Props) => {
       <div className="w-full max-w-md">
         {/* Logo/Título */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Mindazzie</h1>
-          <p className="text-[#B24069] font-medium">Digital Marketing</p>
+          <h1 className="text-4xl font-bold text-white mb-2">Unete a nosotros</h1>
+          <p className="text-[#B24069] font-medium">Tus Acciones en Digital</p>
         </div>
 
         {/* Tarjeta de Registro */}
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
           <div className="p-8">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-[#24114B]">Create Account</h2>
-              <p className="text-gray-600 mt-2">Join us today</p>
+              <h2 className="text-3xl font-bold text-[#24114B]">Crear Cuenta</h2>
+              <p className="text-gray-600 mt-2">Haz parte de esta familia</p>
             </div>
 
             <form onSubmit={handleSubmit(handleRegister)} className="space-y-4">
@@ -64,7 +64,7 @@ const RegisterPage = (props: Props) => {
                   htmlFor="email"
                   className="block text-sm font-medium text-[#24114B] mb-2"
                 >
-                  Email
+                  Correo
                 </label>
                 <input
                   type="email"
@@ -83,7 +83,7 @@ const RegisterPage = (props: Props) => {
                   htmlFor="userName"
                   className="block text-sm font-medium text-[#24114B] mb-2"
                 >
-                  Username
+                  Usuario
                 </label>
                 <input
                   type="text"
@@ -102,7 +102,7 @@ const RegisterPage = (props: Props) => {
                   htmlFor="password"
                   className="block text-sm font-medium text-[#24114B] mb-2"
                 >
-                  Password
+                  Contraseña
                 </label>
                 <input
                   type="password"
@@ -124,7 +124,7 @@ const RegisterPage = (props: Props) => {
                   className="h-4 w-4 text-[#B24069] focus:ring-[#B24069] border-gray-300 rounded"
                 />
                 <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                  I agree to the <a href="#" className="text-[#B24069] hover:text-[#522999]">Terms and Conditions</a>
+                  Estoy de acuerdo con los <a href="#" className="text-[#B24069] hover:text-[#522999]">Terminos y Condiciones</a>
                 </label>
               </div>
 
