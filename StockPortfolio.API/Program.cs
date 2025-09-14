@@ -86,16 +86,11 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-// --- INYECCI�N DE DEPENDENCIAS (DEPENDENCY INJECTION) ---
-// Para Stocks y Portfolios, seguimos usando datos en memoria como planeamos.
-builder.Services.AddScoped<IStockRepository, InMemoryStockRepository>();
-builder.Services.AddScoped<IPortfolioRepository, InMemoryPortfolioRepository>();
-//builder.Services.AddScoped<IStockRepository, StockRepository>();
-// --- �AQU� EST� EL CAMBIO IMPORTANTE! ---
-// Para los Comentarios, ahora usamos el repositorio que se conecta a la base de datos.
-//builder.Services.AddScoped<ICommentRepository, CommentRepository>();
-//Utilizamos el repositorio en memoria para comentarios, ya que no se ha implementado la base de datos para comentarios.
-builder.Services.AddScoped<ICommentRepository, InMemoryCommentRepository>();
+// --- INYECCIÓN DE DEPENDENCIAS (DEPENDENCY INJECTION) ---
+// Ahora apuntamos a los repositorios que usan la base de datos.
+builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IPortfolioRepository, PortfolioRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 // Servicios que no dependen directamente de una tabla (como el TokenService)
 builder.Services.AddScoped<ITokenService, TokenService>();
