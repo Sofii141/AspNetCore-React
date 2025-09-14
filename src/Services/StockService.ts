@@ -57,6 +57,17 @@ export const getCompanyProfileAPI = async (ticker: string): Promise<{ data: Comp
   }
 };
 
+// Conseguir todo el stock
+export const getAllStocksAPI = async (): Promise<Company[]> => {
+  try {
+    const response = await axios.get<Company[]>(api);
+    return response.data;
+  } catch (error) {
+    handleError(error);
+    return [];
+  }
+};
+
 
 // --- FUNCIONES PARA EL PANEL DE ADMINISTRACIÓN ---
 

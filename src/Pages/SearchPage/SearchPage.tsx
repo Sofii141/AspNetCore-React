@@ -10,7 +10,8 @@ import {
   portfolioGetAPI,
 } from "../../Services/PortfolioService";
 import { toast } from "react-toastify";
-import { searchCompaniesAPI } from "../../Services/StockService";
+import { searchCompaniesAPI, getAllStocksAPI } from "../../Services/StockService";
+import Spinner from "../../Components/Spinners/Spinner"; // 
 
 interface Props {}
 
@@ -19,10 +20,28 @@ const SearchPage = (props: Props) => {
   const [portfolioValues, setPortfolioValues] = useState<PortfolioGet[] | null>([]);
   const [searchResult, setSearchResult] = useState<Company[]>([]);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false); // ← Estado para loading
+  const [showAllStocks, setShowAllStocks] = useState<boolean>(true); // ← Controlar qué mostra
 
   useEffect(() => {
     getPortfolio();
+    loadAllStocks(); //  Cargar todas las acciones al iniciar
   }, []);
+
+    const loadAllStocks = async () => {
+    setLoading(true);
+    try {
+      const allStocks = await getAllStocksAPI();
+      if (allStocks && allStocks.length > 0) {
+        setSearchResult(allStocks);
+        setShowAllStocks(true);
+      }
+    } catch (error) {
+      setServerError("Error loading stocks");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -66,13 +85,28 @@ const SearchPage = (props: Props) => {
 
   const onSearchSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
+    if (!search.trim()) {
+      // Si la búsqueda está vacía, mostrar todas las acciones
+      await loadAllStocks();
+      return;
+    }
+
+    setLoading(true);
     const result = await searchCompaniesAPI(search);
     
     if (result && Array.isArray(result.data)) {
         setSearchResult(result.data);
+        setShowAllStocks(false); // ← Ahora son resultados de búsqueda
     } else if (typeof result === "string") {
       setServerError(result);
     }
+    setLoading(false);
+  };
+
+  // ✅ NUEVA FUNCIÓN: Limpiar búsqueda y mostrar todas las acciones
+  const handleClearSearch = () => {
+    setSearch("");
+    loadAllStocks();
   };
 
   return (
@@ -93,6 +127,16 @@ const SearchPage = (props: Props) => {
             search={search}
             handleSearchChange={handleSearchChange}
           />
+          
+          {/* Botón para limpiar búsqueda */}
+          {search && (
+            <button
+              onClick={handleClearSearch}
+              className="mt-3 px-4 py-2 bg-gray-500/30 text-white rounded-lg hover:bg-gray-500/50 transition-colors"
+            >
+              Clear search & show all stocks
+            </button>
+          )}
         </div>
 
         {portfolioValues && portfolioValues.length > 0 && (
@@ -106,11 +150,36 @@ const SearchPage = (props: Props) => {
         )}
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10">
-          <h2 className="text-xl font-bold text-white mb-4">Resultados de Búsqueda</h2>
-          <CardList
-            searchResults={searchResult}
-            onPortfolioCreate={onPortfolioCreate}
-          />
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">
+              {showAllStocks ? "All Available Stocks" : "Search Results"}
+            </h2>
+            <span className="text-gray-300">
+              {searchResult.length} stocks
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Spinner />
+            </div>
+          ) : (
+            <>
+              <CardList
+                searchResults={searchResult}
+                onPortfolioCreate={onPortfolioCreate}
+              />
+              
+              {searchResult.length === 0 && !loading && (
+                <div className="text-center py-8 text-gray-300">
+                  {showAllStocks 
+                    ? "No stocks available at the moment." 
+                    : "No stocks found matching your search."
+                  }
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {serverError && (
