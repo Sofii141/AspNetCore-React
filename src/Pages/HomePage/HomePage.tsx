@@ -13,20 +13,13 @@ const HomePage = () => {
 
       {/* Navbar */}
       <nav className="relative z-10 py-6 px-4 md:px-8 flex justify-between items-center">
-        <div className="text-white font-bold text-2xl">Mindazzie</div>
+        <div className="text-white font-bold text-2xl">Karo juan sofi isa</div>
         <div className="hidden md:flex space-x-6">
           <a href="#features" className="text-white hover:text-[#B24069] transition-colors">Características</a>
           <a href="#services" className="text-white hover:text-[#B24069] transition-colors">Servicios</a>
           <a href="#about" className="text-white hover:text-[#B24069] transition-colors">Nosotros</a>
         </div>
-        <div>
-          <Link
-            to="/login"
-            className="bg-transparent border-2 border-[#B24069] text-white px-6 py-2 rounded-xl hover:bg-[#B24069] transition-colors"
-          >
-            Iniciar Sesión
-          </Link>
-        </div>
+
       </nav>
 
       {/* Hero Section */}
@@ -131,9 +124,9 @@ const HomePage = () => {
       {/* Footer */}
       <footer className="relative z-10 py-8 px-4 md:px-8 border-t border-white/10">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="text-white font-bold text-2xl mb-4 md:mb-0">Mindazzie</div>
+          <div className="text-white font-bold text-2xl mb-4 md:mb-0">Kaisoju</div>
           <div className="text-gray-400">
-            &copy; {new Date().getFullYear()} Mindazzie. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} Kaisoju. Todos los derechos reservados.
           </div>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white transition-colors">
