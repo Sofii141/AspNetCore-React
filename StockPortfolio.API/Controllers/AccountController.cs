@@ -1,5 +1,3 @@
-// Ruta del archivo: StockPortfolio.API/Controllers/AccountController.cs
-
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +41,6 @@ namespace StockPortfolio.API.Controllers
             if (!result.Succeeded)
                 return Unauthorized("Username not found and/or password incorrect");
 
-            // --- ¡AQUÍ ESTÁ EL CAMBIO! Obtenemos los roles del usuario que inicia sesión. ---
             var roles = await _userManager.GetRolesAsync(user);
 
             return Ok(
@@ -51,7 +48,6 @@ namespace StockPortfolio.API.Controllers
                 {
                     UserName = user.UserName,
                     Email = user.Email,
-                    // --- Pasamos los roles para que se incluyan en el token JWT ---
                     Token = _tokenService.CreateToken(user, roles)
                 }
             );
@@ -77,11 +73,9 @@ namespace StockPortfolio.API.Controllers
 
                 if (createdUser.Succeeded)
                 {
-                    // A los nuevos usuarios se les asigna el rol "User" por defecto.
                     var roleResult = await _userManager.AddToRoleAsync(appUser, "User");
                     if (roleResult.Succeeded)
                     {
-                        // --- ¡AQUÍ ESTÁ EL CAMBIO! Obtenemos los roles del nuevo usuario. ---
                         var roles = await _userManager.GetRolesAsync(appUser);
 
                         return Ok(
@@ -89,19 +83,21 @@ namespace StockPortfolio.API.Controllers
                             {
                                 UserName = appUser.UserName,
                                 Email = appUser.Email,
-                                // --- Pasamos el rol ("User") para que se incluya en su primer token ---
                                 Token = _tokenService.CreateToken(appUser, roles)
                             }
                         );
                     }
                     else
                     {
+                        // Si falla la asignación de rol, es un error del servidor
                         return StatusCode(500, roleResult.Errors);
                     }
                 }
                 else
                 {
-                    return StatusCode(500, createdUser.Errors);
+                    // --- ¡ESTA ES LA CORRECCIÓN! ---
+                    // Si el usuario ya existe, es un error del cliente (Bad Request)
+                    return BadRequest(createdUser.Errors);
                 }
             }
             catch (Exception e)
