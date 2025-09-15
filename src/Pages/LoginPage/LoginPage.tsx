@@ -15,8 +15,8 @@ type LoginFormsInputs = {
 };
 
 const validation = Yup.object().shape({
-  userName: Yup.string().required("Username is required"),
-  password: Yup.string().required("Password is required"),
+  userName: Yup.string().required("El usuario es necesario"),
+  password: Yup.string().required("La contraseña es necesaria"),
 });
 
 const LoginPage = (props: Props) => {

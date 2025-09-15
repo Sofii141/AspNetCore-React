@@ -12,7 +12,7 @@ const Navbar = (props: Props) => {
   const { isLoggedIn, user, logout, isAdmin } = useAuth();
 
   return (
-    <nav className="relative container mx-auto p-6">
+    <nav className="relative container mx-auto p-2">
       <div className="flex items-center justify-between">
         {/* --- Logo y enlaces principales --- */}
         <div className="flex items-center space-x20">
@@ -30,12 +30,12 @@ const Navbar = (props: Props) => {
               isAdmin() ? (
                 // Si es ADMIN, mostramos solo el enlace al Panel de Admin
                 <Link to="/admin/dashboard" className="text-red-600 hover:text-darkBlue">
-                  Admin Panel
+                  Panel de administración
                 </Link>
               ) : (
                 // Si es un USUARIO NORMAL, mostramos solo el enlace de Búsqueda
                 <Link to="/search" className="text-black hover:text-darkBlue">
-                  Search
+                  Buscar
                 </Link>
               )
             )}
@@ -48,26 +48,26 @@ const Navbar = (props: Props) => {
           {isLoggedIn() ? (
             // Si el usuario ha iniciado sesión (sea admin o no)
             <>
-              <div className="hover:text-darkBlue">Welcome, {user?.userName}</div>
+              <div className="hover:text-darkBlue">Bienvenido, {user?.userName}</div>
               <a
                 onClick={logout}
                 href="#"
                 className="px-8 py-3 font-bold rounded text-white bg-lightGreen hover:opacity-70"
               >
-                Logout
+                Cerrar sesión
               </a>
             </>
           ) : (
             // Si el usuario NO ha iniciado sesión
             <>
               <Link to="/login" className="hover:text-darkBlue">
-                Login
+                Iniciar Sesión
               </Link>
               <Link
                 to="/register"
                 className="px-8 py-3 font-bold rounded text-white bg-lightGreen hover:opacity-70"
               >
-                Signup
+                Registrarse
               </Link>
             </>
           )}
